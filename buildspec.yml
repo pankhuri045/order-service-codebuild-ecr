@@ -1,27 +1,26 @@
 version: 0.2
 
+env:
+  variables:
+    # Replace with your AWS region and ECR repository name
+    AWS_DEFAULT_REGION: "eu-north-1"
+    ECR_REPO_NAME: "javatechie-registry"
+    IMAGE_TAG: "latest"
+
 phases:
   pre_build:
     commands:
+      - mvn clean install
       - echo Logging in to Amazon ECR...
       - aws --version
-      - docker --version
-
-      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - export AWS_DEFAULT_REGION=eu-north-1
-      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/javatechie-registry
-
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login \
-        --username AWS \
-        --password-stdin $REPOSITORY_URI
-
-      - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPOSITORY_URI=306653833483.dkr.ecr.eu-north-1.amazonaws.com/javatechie-registry
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
   build:
     commands:
       - echo Build started on `date`
-      - mvn clean install
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
@@ -36,6 +35,6 @@ phases:
       - cat imagedefinitions.json
 artifacts:
   files:
-   - imagedefinitions.json
-   - target/order-service.jar
+    - imagedefinitions.json
+    - target/order-service.jar
 
