@@ -20,9 +20,11 @@ public class OrderServiceApplication {
     private OrderDao orderDao;
 
     @GetMapping
-    public List<Order> fetchOrders() {
-        return orderDao.getOrders().stream().
-                sorted(Comparator.comparing(Order::getPrice)).collect(Collectors.toList());
+    public String fetchOrders() {
+
+        return "Hi Pankhuri";
+        /*return orderDao.getOrders().stream().
+                sorted(Comparator.comparing(Order::getPrice)).collect(Collectors.toList());*/
     }
 
     public static void main(String[] args) {
